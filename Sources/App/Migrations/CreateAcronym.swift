@@ -9,6 +9,7 @@ import Fluent
 
 // Migration Creates the TABLE
 // Migration run only once in DB
+
 // 1
 struct CreateAcronym: Migration {
   // 2
