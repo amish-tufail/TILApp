@@ -77,4 +77,46 @@ func routes(_ app: Application) throws {
             .transform(to: .noContent)
       }
     }
+    
+    // 1
+    app.get("api", "acronyms", "search") {
+      req -> EventLoopFuture<[Acronym]> in
+      // 2
+      guard let searchTerm =
+        req.query[String.self, at: "term"] else {
+        throw Abort(.badRequest)
+      }
+      // 3
+//      return Acronym.query(on: req.db)
+//        .filter(\.$short == searchTerm)
+//        .all()
+        
+        return Acronym.query(on: req.db).group(.or) { or in
+          // 2
+          or.filter(\.$short == searchTerm)
+          // 3
+          or.filter(\.$long == searchTerm)
+        // 4
+        }.all()
+    }
+    
+    // 1
+    app.get("api", "acronyms", "first") {
+      req -> EventLoopFuture<Acronym> in
+      // 2
+      Acronym.query(on: req.db)
+        .first()
+        .unwrap(or: Abort(.notFound))
+    }
+    
+    // You can also apply .first() to any query, such as the result of a filter.
+    
+    // 1
+    app.get("api", "acronyms", "sorted") {
+      req -> EventLoopFuture<[Acronym]> in
+      // 2
+      Acronym.query(on: req.db)
+            .sort(\.$short, .descending)
+        .all()
+    }
 }
